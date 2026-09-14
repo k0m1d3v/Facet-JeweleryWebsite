@@ -1,6 +1,4 @@
-# Luxury — siti-vetrina per clienti luxury
-
-Portfolio di demo statiche (hotel, ristoranti, gioiellerie, negozi di lusso). Ogni cliente/demo vive nella propria cartella sotto `sites/`, condividendo font, palette colori e reset CSS di base da `shared/`.
+# Facet — sito-vetrina per clienti luxury
 
 ## Struttura
 

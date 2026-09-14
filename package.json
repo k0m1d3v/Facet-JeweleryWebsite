@@ -1,0 +1,9 @@
+{
+  "name": "luxury-showcase-sites",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio di siti-vetrina statici per clienti luxury (hotel, ristoranti, gioiellerie).",
+  "scripts": {
+    "dev": "npx --yes serve . -l 3000"
+  }
+}

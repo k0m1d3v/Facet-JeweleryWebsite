@@ -1,0 +1,28 @@
+/* Luxury demos — shared design tokens (colors, fonts, base reset).
+   Import this from every site before its own <style> block. */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Work+Sans:wght@300;400;500;600&display=swap');
+
+:root{
+  --ink:#0B0B0D;
+  --ivory:#EDEAE3;
+  --ivory-dim:#8C877D;
+  --platinum:#B8B2A6;
+  --ice:#A9C4D1;
+  --line: rgba(184,178,166,0.22);
+
+  --font-serif: 'Fraunces', serif;
+  --font-sans: 'Work Sans', sans-serif;
+}
+
+*{ box-sizing:border-box; }
+html{ background:var(--ink); }
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--ivory);
+  font-family:var(--font-sans);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2{ font-family:var(--font-serif); font-weight:400; margin:0; }

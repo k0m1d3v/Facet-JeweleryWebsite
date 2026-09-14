@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facet — Alta gioielleria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../shared/tokens.css">
+<style>
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 40px; }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    padding:28px 0;
+    mix-blend-mode:difference;
+  }
+  nav.wrap{ display:flex; justify-content:space-between; align-items:center; }
+  .logo{ font-family:'Fraunces', serif; font-size:1.4rem; color:var(--ivory); }
+  .navlinks{ display:flex; gap:32px; font-size:0.88rem; }
+  .navlinks a{ color:var(--ivory); text-decoration:none; opacity:0.75; }
+
+  /* ---------- SCROLLJACK SECTION ---------- */
+  .scroll-stage{
+    position:relative;
+    height:400vh; /* controls how much scroll distance = full video scrub */
+  }
+  .stage-sticky{
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow:hidden;
+    background:#000;
+  }
+  .stage-sticky video{
+    position:absolute;
+    top:50%; left:50%;
+    width:100%; height:100%;
+    object-fit:cover;
+    transform:translate(-50%,-50%);
+  }
+  .stage-overlay{
+    position:absolute; inset:0;
+    display:flex;
+    align-items:center;
+    pointer-events:none;
+  }
+  .stage-line{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    padding:0 40px;
+    max-width:1180px;
+    margin:0 auto;
+    opacity:0;
+    transition:opacity 0.4s ease;
+  }
+  .stage-line.visible{ opacity:1; }
+  .stage-line h1{
+    font-size:clamp(2.2rem, 5vw, 3.8rem);
+    line-height:1.15;
+    max-width:14ch;
+  }
+  .stage-line.align-right{ justify-content:flex-end; text-align:right; }
+  .stage-line.align-right h1{ margin-left:auto; }
+
+  .scroll-progress{
+    position:absolute;
+    bottom:40px; left:50%;
+    transform:translateX(-50%);
+    width:120px; height:1px;
+    background:var(--line);
+  }
+  .scroll-progress-fill{
+    height:100%;
+    background:var(--platinum);
+    width:0%;
+  }
+
+  /* ---------- SECTIONS AFTER SCRUB ---------- */
+  section.content{ padding:140px 0; }
+  .kicker{
+    color:var(--ice);
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    display:block;
+    margin-bottom:18px;
+  }
+  .intro-grid{
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+    gap:70px;
+  }
+  .intro-grid h2{ font-size:clamp(1.8rem, 3vw, 2.6rem); margin-bottom:24px; }
+  .intro-grid p{ color:var(--ivory-dim); max-width:54ch; margin-bottom:20px; }
+
+  /* ---------- MAISON ---------- */
+  .maison-facts{
+    grid-column:1/-1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:40px;
+    margin-top:60px;
+    padding-top:32px;
+    border-top:1px solid var(--line);
+  }
+  .maison-facts div{ min-width:160px; }
+  .maison-facts strong{
+    display:block;
+    font-family:'Fraunces', serif;
+    font-size:1.6rem;
+    font-weight:400;
+    color:var(--ivory);
+    margin-bottom:6px;
+  }
+  .maison-facts span{ font-size:0.85rem; color:var(--ivory-dim); }
+
+  /* ---------- COLLEZIONI ---------- */
+  .collections-grid{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:60px 40px;
+    margin-top:70px;
+  }
+  .piece:nth-child(2){ margin-top:24px; }
+  .piece:nth-child(3){ margin-top:-8px; }
+  .piece:nth-child(5){ margin-top:18px; }
+
+  .piece-frame{
+    aspect-ratio:16/10;
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .piece-frame img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .piece-name{ font-size:1.15rem; font-style:italic; margin-bottom:6px; }
+  .piece-meta{ font-size:0.82rem; color:var(--ice); margin-bottom:10px; }
+  .piece-desc{ font-size:0.9rem; color:var(--ivory-dim); max-width:32ch; }
+
+  /* ---------- LAVORAZIONE ---------- */
+  .lavorazione-stage{ position:relative; height:320vh; }
+  .lavorazione-sticky{
+    position:sticky; top:0; height:100vh;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  .lavorazione-heading{ width:100%; padding-top:140px; }
+  .process-scroll{ width:100%; flex:1; display:flex; align-items:center; }
+  .process-track{ position:relative; width:100%; height:280px; }
+  .process-line{
+    position:absolute; left:0; top:6px; bottom:6px;
+    width:1px; background:var(--line);
+  }
+  .process-line-fill{
+    position:absolute; top:0; left:0; width:100%;
+    height:0%; background:var(--ice);
+  }
+  .process-step{
+    position:absolute; inset:0 0 0 36px;
+    opacity:0;
+    transform:translateY(16px);
+    transition:opacity 0.6s ease, transform 0.6s ease;
+    pointer-events:none;
+  }
+  .process-step.active{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+  .process-step h3{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:400;
+    font-size:1.4rem; margin-bottom:14px; color:var(--ivory);
+  }
+  .process-step p{ color:var(--ivory-dim); max-width:56ch; }
+
+  /* ---------- CERTIFICAZIONI ---------- */
+  .trust-list{ margin-top:60px; display:grid; grid-template-columns:repeat(3, 1fr); gap:40px; }
+  .trust-item{ border-top:1px solid var(--line); padding-top:24px; }
+  .trust-item h3{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:400;
+    font-size:1.1rem; margin-bottom:12px;
+  }
+  .trust-item p{ font-size:0.9rem; color:var(--ivory-dim); }
+
+  /* ---------- APPUNTAMENTO ---------- */
+  .appointment-grid{ display:grid; grid-template-columns:0.8fr 1.2fr; gap:70px; margin-top:60px; }
+  .appointment-grid p{ color:var(--ivory-dim); max-width:40ch; margin-bottom:20px; }
+  .form-row{ display:flex; gap:28px; }
+  .form-row .form-field{ flex:1; }
+  .form-field{ margin-bottom:28px; }
+  .form-field label{ display:block; font-size:0.8rem; color:var(--ivory-dim); margin-bottom:8px; }
+  .form-field input,
+  .form-field select,
+  .form-field textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line);
+    color:var(--ivory);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.95rem;
+    padding:8px 0;
+    outline:none;
+  }
+  .form-field select option{ background:var(--ink); color:var(--ivory); }
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus{ border-color:var(--ice); }
+  .form-field textarea{ resize:vertical; min-height:80px; }
+  .btn-outline{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:transparent;
+    border:1px solid var(--ivory);
+    color:var(--ivory);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.9rem;
+    padding:14px 28px;
+    cursor:pointer;
+    transition:background 0.25s ease, color 0.25s ease;
+  }
+  .btn-outline:hover{ background:var(--ivory); color:var(--ink); }
+  .form-confirm{
+    margin-top:32px;
+    font-style:italic;
+    font-family:'Fraunces', serif;
+    color:var(--ice);
+    font-size:1.1rem;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:80px 0 0; border-top:1px solid var(--line); }
+  .footer-grid{ display:grid; grid-template-columns:1.2fr 1fr 0.8fr 1.3fr; gap:40px; padding-bottom:60px; }
+  .footer-grid h4{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:400;
+    font-size:1rem; margin-bottom:18px; color:var(--ivory);
+  }
+  .footer-grid p, .footer-grid address{ font-style:normal; font-size:0.85rem; color:var(--ivory-dim); line-height:1.8; }
+  .footer-links{ list-style:none; margin:0; padding:0; }
+  .footer-links li{ margin-bottom:10px; }
+  .footer-links a{ color:var(--ivory-dim); text-decoration:none; font-size:0.85rem; }
+  .footer-links a:hover{ color:var(--ice); }
+  .footer-newsletter{ display:flex; border-bottom:1px solid var(--line); padding-bottom:8px; }
+  .footer-newsletter input{
+    flex:1; background:transparent; border:none; color:var(--ivory);
+    font-family:'Work Sans', sans-serif; font-size:0.85rem; outline:none;
+  }
+  .footer-newsletter button{ background:none; border:none; color:var(--ice); cursor:pointer; font-size:0.85rem; }
+  .footer-note{
+    padding:30px 0;
+    border-top:1px solid var(--line);
+    font-size:0.78rem;
+    color:var(--ivory-dim);
+  }
+  .footer-note code{ background:#161616; padding:2px 6px; border-radius:3px; color:var(--ice); }
+  .footer-credit{
+    padding:24px 0 40px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--ivory-dim);
+  }
+  .footer-credit a{ color:var(--ice); text-decoration:none; }
+
+  @media (max-width:860px){
+    .intro-grid{ grid-template-columns:1fr; gap:40px; }
+    .wrap{ padding:0 24px; }
+    .navlinks{ display:none; }
+    .scroll-stage{ height:300vh; }
+    .collections-grid{ grid-template-columns:1fr; gap:50px; }
+    .piece{ margin-top:0 !important; }
+    .lavorazione-stage{ height:auto; }
+    .lavorazione-sticky{ position:static; height:auto; display:block; overflow:visible; }
+    .lavorazione-heading{ padding-top:0; }
+    .process-scroll{ display:block; }
+    .process-track{ height:auto; padding-left:36px; }
+    .process-line-fill{ display:none; }
+    .process-step{
+      position:relative; inset:auto;
+      opacity:1; transform:none; pointer-events:auto;
+      padding-bottom:56px;
+    }
+    .process-step:last-child{ padding-bottom:0; }
+    .process-step::before{
+      content:''; position:absolute; left:-40px; top:6px;
+      width:7px; height:7px; border-radius:50%; background:var(--ice);
+    }
+    .trust-list{ grid-template-columns:1fr; gap:32px; }
+    .appointment-grid{ grid-template-columns:1fr; gap:40px; }
+    .form-row{ flex-direction:column; gap:0; }
+    .footer-grid{ grid-template-columns:1fr 1fr; gap:36px; }
+    .footer-credit{ flex-direction:column; gap:8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <div class="logo">Facet</div>
+    <div class="navlinks">
+      <a href="#maison">Maison</a>
+      <a href="#collezioni">Collezioni</a>
+      <a href="#lavorazione">Lavorazione</a>
+      <a href="#appuntamento">Appuntamento</a>
+    </div>
+  </nav>
+</header>
+
+<div class="scroll-stage" id="scrollStage">
+  <div class="stage-sticky">
+    <video id="heroVideo" muted playsinline preload="auto" src="../../assets/video/diamond_hero.mp4"></video>
+    <div class="stage-overlay">
+      <div class="stage-line wrap" data-range="0.235,0.32" id="line1">
+        <h1>Ogni luce<br>racconta<br>una storia.</h1>
+      </div>
+      <div class="stage-line wrap align-right" data-range="0.34,0.64" id="line2">
+        <h1>Tagliato<br>per catturarla.</h1>
+      </div>
+      <div class="stage-line wrap" data-range="0.68,1" id="line3">
+        <h1>Facet<br><span style="color:var(--ice); font-style:italic;">Milano</span></h1>
+      </div>
+    </div>
+    <div class="scroll-progress"><div class="scroll-progress-fill" id="progressFill"></div></div>
+  </div>
+</div>
+
+<section class="content" id="maison">
+  <div class="wrap intro-grid">
+    <div>
+      <span class="kicker">La Maison</span>
+      <h2>Una pietra, mille decisioni</h2>
+    </div>
+    <div>
+      <p>Facet nasce a Milano nel 2014, da un'idea semplice quanto ostinata: che l'alta gioielleria non debba scegliere tra la resa più grande e quella più vera. Ogni pietra che entra in atelier è stata scartata almeno una volta altrove — non per un difetto, ma perché non reagiva come doveva alla luce reale, quella di una sera, non quella di un laboratorio.</p>
+      <p>Non inseguiamo la caratura più alta, ma il taglio più vivo: le proporzioni sono calcolate per massimizzare la dispersione della luce bianca in colore, il cosiddetto "fuoco" della pietra. È un lavoro che si vede solo indossato, mai su un catalogo.</p>
+      <p>Lavoriamo per commissione e su piccola serie: nessuna collezione supera i venti pezzi, e chi varca la soglia dell'atelier conosce il nome dell'artigiano che ha montato il proprio anello.</p>
+    </div>
+
+    <div class="maison-facts">
+      <div><strong>2014</strong><span>Anno di fondazione, Milano</span></div>
+      <div><strong>Via Gesù</strong><span>Atelier e boutique</span></div>
+      <div><strong>&lt; 20</strong><span>Pezzi per collezione, ogni anno</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="collezioni">
+  <div class="wrap">
+    <span class="kicker">Collezioni</span>
+    <h2>Sei pezzi, sei luoghi</h2>
+    <p style="color:var(--ivory-dim); max-width:60ch; margin-top:24px;">Ogni pezzo prende il nome da un luogo che ha fatto la storia di Milano — non un'etichetta, ma una geografia precisa.</p>
+
+    <div class="collections-grid">
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/Navigli.jpeg" alt="Anello Navigli, oro bianco 18k con diamante ovale su una fascia a forma di arcata" loading="lazy"></div>
+        <h3 class="piece-name">Navigli</h3>
+        <div class="piece-meta">Oro bianco 18k, diamante taglio ovale 1,2 ct — a partire da €18.500</div>
+        <p class="piece-desc">Le arcate incise lungo la fascia richiamano i ponti che attraversano i Navigli: il diamante ovale segna il punto più alto della campata, dove la luce si raccoglie prima di scendere verso l'acqua.</p>
+      </article>
+
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/Montenapoleone.jpeg" alt="Collana Montenapoleone, oro giallo 18k con pendente a forma di fiocco" loading="lazy"></div>
+        <h3 class="piece-name">Montenapoleone</h3>
+        <div class="piece-meta">Oro giallo 18k, pendente a fiocco — a partire da €12.900</div>
+        <p class="piece-desc">Il fiocco chiude la catena come un nastro annodato all'ultimo momento: un dettaglio sartoriale, non un ciondolo aggiunto.</p>
+      </article>
+
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/Bagutta.jpeg" alt="Orecchini Bagutta, platino con pavé di diamanti" loading="lazy"></div>
+        <h3 class="piece-name">Bagutta</h3>
+        <div class="piece-meta">Platino, diamanti taglio brillante — a partire da €24.000</div>
+        <p class="piece-desc">Pensati per chi cammina in fretta: leggeri al lobo, restano fermi nel movimento e si accendono solo quando serve.</p>
+      </article>
+
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/Solferino.jpeg" alt="Anello Solferino, oro rosa 18k con zaffiro blu mezzanotte" loading="lazy"></div>
+        <h3 class="piece-name">Solferino</h3>
+        <div class="piece-meta">Oro rosa 18k, zaffiro blu mezzanotte — a partire da €21.700</div>
+        <p class="piece-desc">Il blu profondo dello zaffiro raffredda il calore dell'oro rosa: un contrasto controllato, mai casuale.</p>
+      </article>
+
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/SantAndrea.jpeg" alt="Collana Sant'Andrea, platino con zaffiro blu ovale e baguette di diamanti a forma di croce" loading="lazy"></div>
+        <h3 class="piece-name">Sant'Andrea</h3>
+        <div class="piece-meta">Platino, zaffiro blu ovale e baguette di diamanti — a partire da €38.000</div>
+        <p class="piece-desc">Le quattro punte si incrociano nel punto in cui lo zaffiro cattura la luce; i baguette alle estremità chiudono il disegno come una firma.</p>
+      </article>
+
+      <article class="piece">
+        <div class="piece-frame"><img src="../../assets/jewels/Moscova.jpeg" alt="Orecchini Moscova, oro bianco 18k con perla Akoya e diamante" loading="lazy"></div>
+        <h3 class="piece-name">Moscova</h3>
+        <div class="piece-meta">Oro bianco 18k, perle Akoya e diamante — a partire da €9.800</div>
+        <p class="piece-desc">La perla ferma la luce, il diamante la rilascia: un piccolo equilibrio ripetuto due volte, uno per orecchio.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="lavorazione">
+  <div class="lavorazione-stage" id="lavorazioneStage">
+    <div class="lavorazione-sticky">
+      <div class="lavorazione-heading">
+        <div class="wrap">
+          <span class="kicker">La Lavorazione</span>
+          <h2>Dalla pietra grezza al pezzo finito</h2>
+        </div>
+      </div>
+
+      <div class="process-scroll">
+        <div class="wrap process-track">
+          <div class="process-line"><div class="process-line-fill" id="processFill"></div></div>
+
+          <div class="process-step active">
+            <h3>La selezione della pietra</h3>
+            <p>Ogni gemma arriva in atelier grezza o già tagliata da fornitori certificati. Viene osservata sotto tre diverse temperature di luce prima di essere accettata: la resa in laboratorio dice poco su come si comporterà a cena.</p>
+          </div>
+          <div class="process-step">
+            <h3>Il disegno</h3>
+            <p>Il bozzetto nasce a mano, poi viene tradotto in un modello 3D che permette di verificare pesi, ingombri e come la montatura futura lascerà respirare la pietra alla luce.</p>
+          </div>
+          <div class="process-step">
+            <h3>Taglio e cesellatura</h3>
+            <p>Dove la pietra lo richiede, il taglio viene rifinito internamente per massimizzarne il fuoco. La struttura in metallo viene cesellata a mano, un passaggio che nessuna fusione può replicare.</p>
+          </div>
+          <div class="process-step">
+            <h3>Montatura e rifinitura</h3>
+            <p>L'incastonatura è l'ultimo atto: la pietra viene fissata sotto lente, verificata in movimento — non da ferma — e il pezzo esce dall'atelier solo dopo un controllo alla luce naturale.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="certificazioni">
+  <div class="wrap">
+    <span class="kicker">Certificazioni e provenienza</span>
+    <h2>Ciò che non si vede, ma conta</h2>
+
+    <div class="trust-list">
+      <div class="trust-item">
+        <h3>Certificazione GIA</h3>
+        <p>Ogni diamante di caratura superiore a 0,3 ct è accompagnato da certificazione del Gemological Institute of America, indipendente dall'atelier.</p>
+      </div>
+      <div class="trust-item">
+        <h3>Provenienza tracciata</h3>
+        <p>Lavoriamo solo con fornitori che aderiscono al Kimberley Process e che documentano la filiera dalla miniera al taglio, pietra per pietra.</p>
+      </div>
+      <div class="trust-item">
+        <h3>Garanzia a vita</h3>
+        <p>Ogni montatura è coperta da garanzia a vita su difetti strutturali, con manutenzione e ripulitura offerte una volta l'anno in boutique.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="appuntamento">
+  <div class="wrap">
+    <span class="kicker">Appuntamento privato</span>
+    <div class="appointment-grid">
+      <div>
+        <h2>Si riceve solo su invito</h2>
+        <p>Facet non vende online. Ogni pezzo si prova, si discute ed eventualmente si modifica prima di essere consegnato — un processo che richiede una stanza, non un carrello.</p>
+        <p>Lasciateci un contatto: vi risponderemo entro 48 ore per fissare un appuntamento in atelier, a Milano, o una call conoscitiva se preferite iniziare da lì.</p>
+      </div>
+      <div>
+        <form id="appointmentForm">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="apptName">Nome e cognome</label>
+              <input type="text" id="apptName" name="nome" required>
+            </div>
+            <div class="form-field">
+              <label for="apptContact">Email o telefono</label>
+              <input type="text" id="apptContact" name="contatto" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="apptType">Tipo di richiesta</label>
+            <select id="apptType" name="tipo">
+              <option>Consulenza personalizzata</option>
+              <option>Visione di una collezione</option>
+              <option>Creazione su misura</option>
+              <option>Manutenzione e certificazione</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="apptNotes">Note (facoltativo)</label>
+            <textarea id="apptNotes" name="note" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn-outline">Richiedi un appuntamento →</button>
+        </form>
+        <p class="form-confirm" id="appointmentConfirm" hidden>— Richiesta ricevuta. Vi contatteremo entro 48 ore.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <h4>Facet</h4>
+      <p>Alta gioielleria su commissione.<br>Milano, dal 2014.</p>
+    </div>
+    <div>
+      <h4>Boutique</h4>
+      <address>Via Gesù, 12<br>20121 Milano</address>
+      <p>Lun–Sab, 10:00–19:00<br>Su appuntamento</p>
+    </div>
+    <div>
+      <h4>Seguici</h4>
+      <ul class="footer-links">
+        <li><a href="#" onclick="return false;">Instagram</a></li>
+        <li><a href="#" onclick="return false;">Pinterest</a></li>
+        <li><a href="#" onclick="return false;">LinkedIn</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Newsletter</h4>
+      <p>Una email al mese, mai di più: nuovi pezzi e aperture private.</p>
+      <form class="footer-newsletter" onsubmit="return false;">
+        <input type="email" placeholder="La tua email" aria-label="Email per la newsletter" required>
+        <button type="submit">Iscriviti</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap footer-note">
+    Nota tecnica sulla demo: la sezione video in apertura usa <strong>scroll-jacking</strong> — invece di andare in loop autonomo, il video è collegato alla posizione di scroll: <code>video.currentTime</code> viene impostato in proporzione a quanto hai scrollato dentro la sezione (alta 400vh). Il testo appare e sparisce in tre tappe sincronizzate con la rotazione della pietra. Su iOS Safari il primo <code>play()+pause()</code> silenzioso serve a "sbloccare" lo scrubbing programmatico del video.
+  </div>
+
+  <div class="wrap footer-credit">
+    <span>© 2026 Facet. Progetto dimostrativo.</span>
+    <span>Sito e sviluppo — <a href="https://github.com/k0m1d3v" target="_blank" rel="noopener">0x3mme</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const stage = document.getElementById('scrollStage');
+  const video = document.getElementById('heroVideo');
+  const progressFill = document.getElementById('progressFill');
+  const lines = [
+    document.getElementById('line1'),
+    document.getElementById('line2'),
+    document.getElementById('line3')
+  ];
+
+  let duration = 0;
+  let unlocked = false;
+
+  video.addEventListener('loadedmetadata', () => {
+    duration = video.duration;
+  });
+
+  // iOS/Safari unlock: a silent play+pause lets currentTime scrubbing work later
+  function unlockVideo(){
+    if(unlocked) return;
+    video.play().then(() => {
+      video.pause();
+      unlocked = true;
+    }).catch(() => { /* ignore, will retry on next interaction */ });
+  }
+  window.addEventListener('scroll', unlockVideo, { once:true, passive:true });
+  window.addEventListener('touchstart', unlockVideo, { once:true, passive:true });
+
+  function parseRange(el){
+    const [a,b] = el.dataset.range.split(',').map(Number);
+    return [a,b];
+  }
+
+  let ticking = false;
+  function update(){
+    ticking = false;
+    const rect = stage.getBoundingClientRect();
+    const scrollable = stage.offsetHeight - window.innerHeight;
+    let progress = scrollable > 0 ? (-rect.top) / scrollable : 0;
+    progress = Math.min(Math.max(progress, 0), 1);
+
+    if(duration){
+      video.currentTime = progress * duration;
+    }
+
+    progressFill.style.width = (progress * 100).toFixed(1) + '%';
+
+    lines.forEach(line => {
+      const [a,b] = parseRange(line);
+      line.classList.toggle('visible', progress >= a && progress <= b);
+    });
+  }
+
+  window.addEventListener('scroll', () => {
+    if(!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive:true });
+
+  window.addEventListener('resize', update);
+  update();
+})();
+</script>
+
+<script>
+(function(){
+  const form = document.getElementById('appointmentForm');
+  const confirmMsg = document.getElementById('appointmentConfirm');
+  if(!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    form.hidden = true;
+    confirmMsg.hidden = false;
+  });
+})();
+</script>
+
+<script>
+(function(){
+  if(!window.matchMedia('(min-width: 861px)').matches) return;
+
+  const stage = document.getElementById('lavorazioneStage');
+  if(!stage) return;
+  const steps = Array.from(stage.querySelectorAll('.process-step'));
+  const fill = document.getElementById('processFill');
+  const stepCount = steps.length;
+
+  let ticking = false;
+  function update(){
+    ticking = false;
+    const rect = stage.getBoundingClientRect();
+    const scrollable = stage.offsetHeight - window.innerHeight;
+    let progress = scrollable > 0 ? (-rect.top) / scrollable : 0;
+    progress = Math.min(Math.max(progress, 0), 1);
+
+    const activeIndex = Math.min(stepCount - 1, Math.floor(progress * stepCount));
+
+    // once the last phase is fully active, force the fill to 100%: raw progress can
+    // fall just short of 1 here due to rounding between offsetHeight (int) and the
+    // getBoundingClientRect() float, which would otherwise leave the line visibly
+    // short even though the last phase is already shown at full opacity
+    const fillProgress = activeIndex === stepCount - 1 ? 1 : progress;
+    fill.style.height = (fillProgress * 100).toFixed(1) + '%';
+
+    steps.forEach((step, i) => {
+      step.classList.toggle('active', i === activeIndex);
+    });
+  }
+
+  window.addEventListener('scroll', () => {
+    if(!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive:true });
+
+  window.addEventListener('resize', update);
+  update();
+})();
+</script>
+
+</body>
+</html>

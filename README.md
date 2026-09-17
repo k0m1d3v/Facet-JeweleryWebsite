@@ -1,4 +1,6 @@
-# Facet — sito-vetrina per clienti luxury
+# Facet — sito vetrina per un brand di gioielleria fittizio (Milano)
+
+Progetto realizzato per mostrare le mie competenze di sviluppo front-end: "Facet" è un brand di gioielleria immaginario con sede a Milano, non un cliente reale.
 
 Live at https://k0m1d3v.github.io/Facet-JeweleryWebsite/sites/facet/
 
